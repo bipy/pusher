@@ -5,6 +5,7 @@ import (
     "net/url"
     "pusher/app/models"
     "pusher/pkg/config"
+    "pusher/pkg/utils"
     "pusher/platform/client"
 )
 
@@ -35,6 +36,7 @@ func Send(c *fiber.Ctx) error {
 
     msg.ChatId = config.ChatId
     msg.ParseMode = config.ParseMode
+    msg.Text = utils.EscapeMarkdown(msg.Text)
 
     code, _, err := client.HttpClient.Post(config.ApiUrl).JSON(msg).Bytes()
     if err != nil || code != fiber.StatusOK {
