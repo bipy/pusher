@@ -13,7 +13,7 @@ WORKDIR /app
 COPY --from=0 /data/pusher pusher
 COPY --from=0 /data/entrypoint.sh entrypoint.sh
 
-ENV SERVER_HOST 0.0.0.0
+ENV SERVER_HOST "0.0.0.0"
 ENV SERVER_PORT 3333
 ENV TG_TOKEN ""
 ENV CHAT_ID ""
