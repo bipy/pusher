@@ -74,6 +74,34 @@ You can use pusher by `GET` or `POST` method
 1. Set environment 
 2. Add header for each request
 
+
+
+# Questions
+
+**Q: Why would I use pusher rather than the official api?**
+
+1. Telegram official api is blocked in some area
+
+2. pusher will remember bot token and chat id for you, so you can simply push your message by a GET query:
+
+    ```bash
+    curl -X GET https://example.com\?text=hello%20world
+    ```
+
+**Q: Where is the release?**
+
+1. Deploying with docker is recommended, plz refer [bipy/pusher - DockerHub](https://hub.docker.com/r/bipy/pusher) or build image by yourself
+
+2. Also, if you want to build and run cli in a shell or as a service:
+
+    ```bash
+    git clone https://github.com/bipy/pusher.git; cd pusher
+    
+    go build
+    
+    TG_TOKEN=<your_tg_bot_token> CHAT_ID=<your_chat_id> ./pusher
+    ```
+
 # Thanks to
 
 [gofiber/fiber](https://github.com/gofiber/fiber)
