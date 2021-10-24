@@ -5,5 +5,5 @@ import "github.com/gofiber/fiber/v2"
 var HttpClient *fiber.Client
 
 func init() {
-    HttpClient = &fiber.Client{}
+	HttpClient = &fiber.Client{}
 }
