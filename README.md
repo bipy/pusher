@@ -4,6 +4,8 @@ pusher is an api server based on fiber to handle telegram bot `/sendMessage` api
 
 pusher is for personal usage, thus it can serve only one user
 
+![](https://goreportcard.com/badge/github.com/bipy/pusher)
+
 ## CI
 
 Auto build docker image by GitHub Actions
