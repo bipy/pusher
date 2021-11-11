@@ -51,10 +51,11 @@ You can use pusher by `GET` or `POST` method
 
 **GET**
 
-| Param   | Value  | Description                 |
-| ------- | ------ | --------------------------- |
-| text    | string | your message                |
-| preview | 0 or 1 | default 0 (disable preview) |
+| Param   | Value  | Description                                    |
+| ------- | ------ | ---------------------------------------------- |
+| text    | string | your message                                   |
+| msg     | string | same as `text` (valid only if `text` is empty) |
+| preview | 0 or 1 | default is 0 (disable preview)                 |
 
 
 
@@ -66,6 +67,10 @@ You can use pusher by `GET` or `POST` method
     "disable_web_page_preview": true
 }
 ```
+
+Also support for [louislam/uptime-kuma](https://github.com/louislam/uptime-kuma) Webhook Notification
+
+
 
 **(Optional) Use `SECURE_KEY`**
 
@@ -82,13 +87,22 @@ You can use pusher by `GET` or `POST` method
 
 **Q: Why would I use pusher rather than the official api?**
 
-1. Telegram official api is blocked in some area
+1. Telegram official api is blocked in some area:
+
+    you can use pusher as [louislam/uptime-kuma](https://github.com/louislam/uptime-kuma) webhook notification
 
 2. pusher will remember bot token and chat id for you, so you can simply push your message by a GET query:
 
     ```bash
-    curl -X GET https://example.com\?text=hello%20world
+    curl "https://example.com/pusher?text=hello%20world"
     ```
+    
+    or even simpler using [HTTPie](https://github.com/httpie/httpie):
+    
+    ```bash
+    http POST https://example.com/pusher text="hello world"
+
+​		
 
 **Q: Where is the release?**
 
