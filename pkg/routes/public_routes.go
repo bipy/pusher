@@ -10,9 +10,9 @@ func PublicRoutes(a *fiber.App) {
 	// Create routes group.
 	route := a.Group("/")
 
-	route.Get("/", controllers.Send)
+	route.Get("/", controllers.GetSend)
 
-	route.Post("/", controllers.Send)
+	route.Post("/", controllers.PostSend)
 
 	route.Get("/pulse", controllers.Pulse)
 
