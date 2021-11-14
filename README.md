@@ -2,7 +2,7 @@
 
 pusher is an api server based on fiber to handle telegram bot `/sendMessage` api
 
-pusher is for personal usage, thus it can serve only one user
+pusher is for personal usage, thus it can only serve one user
 
 ![](https://goreportcard.com/badge/github.com/bipy/pusher)
 
@@ -29,7 +29,7 @@ docker run -d --name pusher -p 3333:3333 \
 	-e CHAT_ID=<your_chat_id> \
 	-e SERVER_HOST=0.0.0.0 \
 	-e SERVER_PORT=3333 \
-	-e SECURE_KEY=pAssw0rd
+	-e SECURE_KEY=pAssw0rd \
 	bipy/pusher:latest
 ```
 
