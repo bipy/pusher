@@ -34,7 +34,7 @@ func GetSend(c *fiber.Ctx) error {
 	msg.ParseMode = config.ParseMode
 	msg.Text = utils.EscapeMarkdown(msg.Text)
 
-	code, _, err := client.HttpClient.Post(config.ApiUrl).JSON(msg).Bytes()
+	code, err := client.DoPush(msg)
 	if err != nil || code != fiber.StatusOK {
 		return c.SendStatus(fiber.StatusBadGateway)
 	}
@@ -70,7 +70,7 @@ func PostSend(c *fiber.Ctx) error {
 	msg.ParseMode = config.ParseMode
 	msg.Text = utils.EscapeMarkdown(msg.Text)
 
-	code, _, err := client.HttpClient.Post(config.ApiUrl).JSON(msg).Bytes()
+	code, err := client.DoPush(msg)
 	if err != nil || code != fiber.StatusOK {
 		return c.SendStatus(fiber.StatusBadGateway)
 	}
