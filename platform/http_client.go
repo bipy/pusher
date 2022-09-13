@@ -35,11 +35,21 @@ func Push(message []rune, disableLinkPreview bool, ip string) error {
 }
 
 func send(msg *models.TgMessage) error {
-	buf, err := json.Marshal(msg)
+	data, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
-	resp, err := http.DefaultClient.Post(config.ApiURL, echo.MIMEApplicationJSONCharsetUTF8, bytes.NewReader(buf))
+	data, err = utils.Gzip(data)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodPost, config.ApiURL, bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", echo.MIMEApplicationJSONCharsetUTF8)
+	req.Header.Set("Content-Encoding", "gzip")
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
