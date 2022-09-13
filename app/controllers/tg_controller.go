@@ -1,82 +1,88 @@
 package controllers
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
+	"net/http"
 	"net/url"
 	"pusher/app/models"
 	"pusher/pkg/config"
 	"pusher/pkg/utils"
-	"pusher/platform/client"
+	"pusher/platform"
 )
 
-func GetSend(c *fiber.Ctx) error {
-	msg := &models.Message{}
-
-	if config.Key != "" && c.Get("Secure-Key", "") != config.Key {
-		return c.SendStatus(fiber.StatusUnauthorized)
-	}
-
-	msg.Text, _ = url.QueryUnescape(c.Query("text", ""))
-	msg.DisableLinkPreview = c.Query("preview", "0") == "0"
-	msg.Msg, _ = url.QueryUnescape(c.Query("msg", ""))
-
-	if msg.Text == "" {
-		if msg.Msg == "" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"code": 1,
-				"msg":  "empty payload",
-			})
+func GetSend(c echo.Context) error {
+	if config.Key != "" {
+		err := Authorize(c)
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, utils.FailResponse(err.Error(), nil))
 		}
-		msg.Text = msg.Msg
 	}
 
-	msg.ChatId = config.ChatId
-	msg.ParseMode = config.ParseMode
-	msg.Text = utils.EscapeMarkdown(msg.Text)
-
-	code, err := client.DoPush(msg)
-	if err != nil || code != fiber.StatusOK {
-		return c.SendStatus(fiber.StatusBadGateway)
+	text, err := url.QueryUnescape(c.QueryParam("text"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, utils.FailResponse(err.Error(), nil))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"code": 0,
-		"msg":  "OK",
-	})
+	if text == "" {
+		msg, err := url.QueryUnescape(c.QueryParam("msg"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, utils.FailResponse(err.Error(), nil))
+		}
+		if msg == "" {
+			return c.JSON(http.StatusBadRequest, utils.FailResponse("empty payload", nil))
+		}
+		text = msg
+	}
+
+	disableLinkPreview := c.QueryParam("preview") == ""
+
+	escapeMarkdown := c.QueryParam("escape") == ""
+
+	if escapeMarkdown {
+		text = utils.EscapeMarkdown(text)
+	}
+
+	ip := utils.EscapeMarkdown(c.RealIP())
+
+	err = platform.Push([]rune(text), disableLinkPreview, ip)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, utils.FailResponse(err.Error(), nil))
+	}
+
+	return c.JSON(http.StatusOK, utils.SuccessResponse(nil))
 }
 
-func PostSend(c *fiber.Ctx) error {
-	msg := &models.Message{}
-
-	if config.Key != "" && c.Get("Secure-Key", "") != config.Key {
-		return c.SendStatus(fiber.StatusUnauthorized)
+func PostSend(c echo.Context) error {
+	if config.Key != "" {
+		err := Authorize(c)
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, utils.FailResponse(err.Error(), nil))
+		}
 	}
 
-	if err := c.BodyParser(msg); err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
+	msg := &models.ReqMessage{EscapeMarkdown: true}
+	err := c.Bind(msg)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, utils.FailResponse(err.Error(), nil))
 	}
 
 	if msg.Text == "" {
 		if msg.Msg == "" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"code": 1,
-				"msg":  "empty payload",
-			})
+			return c.JSON(http.StatusBadRequest, utils.FailResponse("empty payload", nil))
 		}
 		msg.Text = msg.Msg
 	}
 
-	msg.ChatId = config.ChatId
-	msg.ParseMode = config.ParseMode
-	msg.Text = utils.EscapeMarkdown(msg.Text)
-
-	code, err := client.DoPush(msg)
-	if err != nil || code != fiber.StatusOK {
-		return c.SendStatus(fiber.StatusBadGateway)
+	if msg.EscapeMarkdown {
+		msg.Text = utils.EscapeMarkdown(msg.Text)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"code": 0,
-		"msg":  "OK",
-	})
+	ip := utils.EscapeMarkdown(c.RealIP())
+
+	err = platform.Push([]rune(msg.Text), msg.DisableLinkPreview, ip)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, utils.FailResponse(err.Error(), nil))
+	}
+
+	return c.JSON(http.StatusOK, utils.SuccessResponse(nil))
 }

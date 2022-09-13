@@ -1,7 +1,10 @@
 package controllers
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/labstack/echo/v4"
+	"net/http"
+)
 
-func Pulse(c *fiber.Ctx) error {
-	return c.SendStatus(fiber.StatusNoContent)
+func Pulse(c echo.Context) error {
+	return c.NoContent(http.StatusNoContent)
 }

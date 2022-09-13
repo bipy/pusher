@@ -1,19 +1,14 @@
 package routes
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 	"pusher/app/controllers"
 )
 
-// PublicRoutes func for describe group of public routes.
-func PublicRoutes(a *fiber.App) {
-	// Create routes group.
-	route := a.Group("/")
+func PublicRoutes(a *echo.Echo) {
+	a.GET("/", controllers.GetSend)
+	a.POST("/", controllers.PostSend)
 
-	route.Get("/", controllers.GetSend)
-
-	route.Post("/", controllers.PostSend)
-
-	route.Get("/pulse", controllers.Pulse)
+	a.GET("/pulse", controllers.Pulse)
 
 }

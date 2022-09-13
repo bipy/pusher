@@ -2,7 +2,7 @@
 FROM golang:alpine
 WORKDIR /data
 COPY . .
-RUN GO111MODULE=on go build -o pusher .
+RUN go build -o pusher .
 
 # image
 FROM alpine:latest

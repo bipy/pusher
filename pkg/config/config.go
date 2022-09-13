@@ -2,25 +2,30 @@ package config
 
 import (
 	"os"
+	"strconv"
 )
 
 const (
-	BaseUrl        = "https://api.telegram.org/bot"
-	ParseMode      = "Markdown"
+	BaseURL        = "https://api.telegram.org/bot"
+	ParseMode      = "MarkdownV2"
 	ApiSendMessage = "/sendMessage"
 )
 
 var (
 	Token  string
-	ChatId string
-	ApiUrl string
+	ChatId int
+	ApiURL string
 	Key    string
 )
 
 func init() {
+	var err error
+	ChatId, err = strconv.Atoi(os.Getenv("CHAT_ID"))
+	if err != nil {
+		panic("invalid chat id")
+	}
 	Token = os.Getenv("TG_TOKEN")
-	ChatId = os.Getenv("CHAT_ID")
 	Key = os.Getenv("SECURE_KEY")
 
-	ApiUrl = BaseUrl + Token + ApiSendMessage
+	ApiURL = BaseURL + Token + ApiSendMessage
 }

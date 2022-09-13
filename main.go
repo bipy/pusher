@@ -2,22 +2,22 @@ package main
 
 import (
 	"fmt"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"log"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"os"
 	"pusher/pkg/routes"
 )
 
 func main() {
-	app := fiber.New()
+	app := echo.New()
 
-	app.Use(logger.New())
+	app.Use(middleware.Logger())
+	app.Use(middleware.Recover())
+	app.Use(middleware.CORS())
 
 	routes.PublicRoutes(app)
-	routes.NotFoundRoute(app)
 
-	listen := fmt.Sprintf("%s:%s", os.Getenv("SERVER_HOST"), os.Getenv("SERVER_PORT"))
+	addr := fmt.Sprintf("%s:%s", os.Getenv("SERVER_HOST"), os.Getenv("SERVER_PORT"))
 
-	log.Fatal(app.Listen(listen))
+	app.Logger.Fatal(app.Start(addr))
 }
