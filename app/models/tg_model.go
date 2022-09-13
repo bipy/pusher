@@ -8,8 +8,8 @@ type TgMessage struct {
 }
 
 type ReqMessage struct {
-	Text               string `json:"text"`
-	DisableLinkPreview bool   `json:"disable_web_page_preview"`
-	Msg                string `json:"msg"`
-	EscapeMarkdown     bool   `json:"escape_markdown"`
+	Text     string `json:"text"`
+	Preview  bool   `json:"preview"`
+	Msg      string `json:"msg"`
+	Markdown bool   `json:"markdown"`
 }

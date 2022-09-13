@@ -37,10 +37,10 @@ docker run -d --name pusher -p 3333:3333 \
 
 ## Environment
 
-| Name        | Value  | Description           |
-| ----------- | ------ | --------------------- |
+| Name        | Value | Description           |
+| :---------: | :-: | :-------------------: |
 | TG_TOKEN    | string | <your_tg_bot_token>   |
-| CHAT_ID     | string | <your_chat_id>        |
+| CHAT_ID     | int    | <your_chat_id>        |
 | SERVER_HOST | string | default "0.0.0.0"     |
 | SERVER_PORT | int    | default 3333          |
 | SECURE_KEY  | string | default "" (disabled) |
@@ -51,11 +51,12 @@ You can use pusher by `GET` or `POST` method
 
 **GET**
 
-| Param   | Value  | Description                                    |
-| ------- | ------ | ---------------------------------------------- |
-| text    | string | your message                                   |
-| msg     | string | same as `text` (valid only if `text` is empty) |
-| preview | 0 or 1 | default is 0 (disable preview)                 |
+| Param    | Value  | Description                                    |
+| -------- | ------ | ---------------------------------------------- |
+| text     | string | your message                                   |
+| msg      | string | same as `text` (valid only if `text` is empty) |
+| preview  |        | default is empty (disable preview)             |
+| markdown |        | default is empty (disable markdown)            |
 
 
 
@@ -64,7 +65,8 @@ You can use pusher by `GET` or `POST` method
 ```json
 {
     "text": "your message",
-    "disable_web_page_preview": true
+    "preview": false,
+    "markdown": false
 }
 ```
 

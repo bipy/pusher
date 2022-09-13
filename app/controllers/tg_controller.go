@@ -18,13 +18,15 @@ func GetSend(c echo.Context) error {
 		}
 	}
 
-	text, err := url.QueryUnescape(c.QueryParam("text"))
+	params := c.QueryParams()
+
+	text, err := url.QueryUnescape(params.Get("text"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, utils.FailResponse(err.Error(), nil))
 	}
 
 	if text == "" {
-		msg, err := url.QueryUnescape(c.QueryParam("msg"))
+		msg, err := url.QueryUnescape(params.Get("msg"))
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, utils.FailResponse(err.Error(), nil))
 		}
@@ -34,11 +36,11 @@ func GetSend(c echo.Context) error {
 		text = msg
 	}
 
-	disableLinkPreview := c.QueryParam("preview") == ""
+	disableLinkPreview := !params.Has("preview")
 
-	escapeMarkdown := c.QueryParam("escape") == ""
+	useMarkdown := params.Has("markdown")
 
-	if escapeMarkdown {
+	if !useMarkdown {
 		text = utils.EscapeMarkdown(text)
 	}
 
@@ -60,7 +62,7 @@ func PostSend(c echo.Context) error {
 		}
 	}
 
-	msg := &models.ReqMessage{EscapeMarkdown: true}
+	msg := &models.ReqMessage{}
 	err := c.Bind(msg)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, utils.FailResponse(err.Error(), nil))
@@ -73,13 +75,13 @@ func PostSend(c echo.Context) error {
 		msg.Text = msg.Msg
 	}
 
-	if msg.EscapeMarkdown {
+	if !msg.Markdown {
 		msg.Text = utils.EscapeMarkdown(msg.Text)
 	}
 
 	ip := utils.EscapeMarkdown(c.RealIP())
 
-	err = platform.Push([]rune(msg.Text), msg.DisableLinkPreview, ip)
+	err = platform.Push([]rune(msg.Text), !msg.Preview, ip)
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, utils.FailResponse(err.Error(), nil))
 	}
