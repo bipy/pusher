@@ -122,10 +122,6 @@ Also support for [louislam/uptime-kuma](https://github.com/louislam/uptime-kuma)
 
 # Thanks to
 
-[gofiber/fiber](https://github.com/gofiber/fiber)
-
-[create-go-app/fiber-go-template](https://github.com/create-go-app/fiber-go-template)
-
 [muety/webhook2telegram](https://github.com/muety/webhook2telegram)
 
 # License
