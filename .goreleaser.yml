@@ -7,7 +7,6 @@ before:
 
 builds:
   - id: pusher
-    main: ./main.go
     binary: pusher
     env:
       - CGO_ENABLED=0

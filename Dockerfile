@@ -39,9 +39,9 @@ LABEL org.opencontainers.image.licenses="MIT"
 
 WORKDIR /app
 
-# Install ca-certificates for HTTPS
-# Create non-root user and group
-RUN apk --no-cache add ca-certificates || true && \
+# Install ca-certificates for HTTPS (critical for Telegram API)
+# Create non-root user and group (may already exist, so ignore errors)
+RUN apk --no-cache add ca-certificates && \
     addgroup -g 1000 pusher 2>/dev/null || true && \
     adduser -D -u 1000 -G pusher pusher 2>/dev/null || true
 

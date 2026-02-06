@@ -16,8 +16,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Get version
-        run: echo "GIT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Get version and build date
+        run: |
+          echo "GIT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+          echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -64,7 +66,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             VERSION=${{ env.GIT_TAG }}
-            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            BUILD_DATE=${{ env.BUILD_DATE }}
             VCS_REF=${{ github.sha }}
 
       - name: Image digest
