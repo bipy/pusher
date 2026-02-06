@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"pusher/app/models"
 	"pusher/pkg/config"
 	"pusher/pkg/utils"
@@ -12,7 +12,7 @@ import (
 )
 
 // GetSend handles GET requests to send messages to Telegram
-func GetSend(c echo.Context) error {
+func GetSend(c *echo.Context) error {
 	// Check authentication if enabled
 	if config.Key != "" {
 		if err := Authorize(c); err != nil {
@@ -61,7 +61,7 @@ func GetSend(c echo.Context) error {
 }
 
 // PostSend handles POST requests to send messages to Telegram
-func PostSend(c echo.Context) error {
+func PostSend(c *echo.Context) error {
 	// Check authentication if enabled
 	if config.Key != "" {
 		if err := Authorize(c); err != nil {
