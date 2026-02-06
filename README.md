@@ -469,7 +469,7 @@ services:
   pusher:
     image: bipy/pusher:latest
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3333/pulse"]
+      test: ["CMD", "curl", "-f", "http://localhost:3333/pulse"]
       interval: 30s
       timeout: 10s
       retries: 3
