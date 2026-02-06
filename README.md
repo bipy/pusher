@@ -233,6 +233,8 @@ If `SECURE_KEY` is configured, include it in your requests using either method:
 
 **Method 1: Query Parameter (Easier - No Custom Headers Needed)**
 
+⚠️ **Security Note:** Query parameters are visible in URL logs, browser history, and may be leaked via referrer headers. Use this method only in trusted environments or for non-sensitive deployments. For production use with sensitive data, prefer the header method below.
+
 Add `key` parameter to your URL:
 
 ```bash
@@ -245,7 +247,9 @@ curl -X POST "http://localhost:3333/?key=your_secure_password" \
   -d '{"text": "Authenticated message"}'
 ```
 
-**Method 2: Custom Header (More Secure)**
+**Method 2: Custom Header (Recommended for Production)**
+
+🔒 **More Secure:** Headers are not logged in URLs, don't appear in browser history, and aren't leaked via referrer headers. This is the recommended method for production deployments.
 
 ```bash
 # With Secure-Key header
@@ -253,6 +257,7 @@ curl -X POST http://localhost:3333/ \
   -H "Content-Type: application/json" \
   -H "Secure-Key: your_secure_password" \
   -d '{"text": "Authenticated message"}'
+```
 ```
 
 > **Note:** When `SECURE_KEY` is not set (empty), authentication is disabled and all requests are allowed.
@@ -476,16 +481,27 @@ Pusher supports [Uptime Kuma](https://github.com/louislam/uptime-kuma) webhook n
    - Always deploy behind a reverse proxy (nginx, Caddy, Traefik)
    - Enable HTTPS to protect your `SECURE_KEY` in transit
 
-2. **Strong SECURE_KEY**
+2. **Choose Authentication Method Wisely**
+   - **Header-based (Recommended):** Use `Secure-Key` header in production environments
+     - Not logged in URLs
+     - Not visible in browser history
+     - Not leaked via referrer headers
+   - **Query parameter:** Use `key` parameter only in trusted environments
+     - Convenient for webhooks and simple integrations
+     - ⚠️ WARNING: Exposed in server logs, browser history, and referrer headers
+     - Best for internal tools or non-production deployments
+
+3. **Strong SECURE_KEY**
    - Use a randomly generated, long password
    - Store in environment variables or secrets manager
+   - Rotate keys periodically
 
-3. **Network Security**
+4. **Network Security**
    - Don't expose Pusher directly to the internet
    - Use firewall rules to restrict access
    - Consider VPN or private network deployment
 
-4. **Rate Limiting**
+5. **Rate Limiting**
    - Implement rate limiting at the reverse proxy level
    - Monitor for unusual activity
 
