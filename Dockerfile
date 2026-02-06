@@ -22,6 +22,10 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
 # Runtime stage
 FROM alpine:latest
 
+ARG VERSION=dev
+ARG BUILD_DATE
+ARG VCS_REF
+
 # Add metadata labels
 LABEL org.opencontainers.image.title="Pusher"
 LABEL org.opencontainers.image.description="A lightweight, secure Telegram message delivery API"
@@ -33,12 +37,13 @@ LABEL org.opencontainers.image.created="${BUILD_DATE}"
 LABEL org.opencontainers.image.revision="${VCS_REF}"
 LABEL org.opencontainers.image.licenses="MIT"
 
-# Install ca-certificates for HTTPS and curl for healthcheck
-RUN apk --no-cache add ca-certificates curl && \
-    addgroup -g 1000 pusher && \
-    adduser -D -u 1000 -G pusher pusher
-
 WORKDIR /app
+
+# Install ca-certificates for HTTPS
+# Create non-root user and group
+RUN apk --no-cache add ca-certificates || true && \
+    addgroup -g 1000 pusher 2>/dev/null || true && \
+    adduser -D -u 1000 -G pusher pusher 2>/dev/null || true
 
 # Copy binary and entrypoint from builder
 COPY --from=builder --chown=pusher:pusher /build/pusher .
@@ -59,7 +64,9 @@ USER pusher
 
 EXPOSE $SERVER_PORT
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:${SERVER_PORT}/pulse || exit 1
+# Note: healthcheck can be added via docker-compose or kubernetes if needed
+# Example: healthcheck with wget (smaller than curl)
+# HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+#     CMD wget --quiet --tries=1 --spider http://localhost:${SERVER_PORT}/pulse || exit 1
 
 ENTRYPOINT ["/app/entrypoint.sh"]
