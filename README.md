@@ -177,6 +177,12 @@ Send a message using JSON payload.
 | `preview` | boolean | No | `false` | Enable link preview |
 | `markdown` | boolean | No | `false` | Enable Telegram MarkdownV2 parsing |
 
+**Authentication:**
+
+If `SECURE_KEY` is configured, provide authentication via:
+- Query parameter: `POST /?key=your_secure_password`
+- Header: `Secure-Key: your_secure_password`
+
 **Response:**
 
 ```json
@@ -199,11 +205,16 @@ Send a message using URL parameters.
 | `msg` | string | No | Alternative to `text` (fallback) |
 | `preview` | flag | No | Include this parameter to enable link preview |
 | `markdown` | flag | No | Include this parameter to enable markdown |
+| `key` | string | Conditional | Authentication key (required if `SECURE_KEY` is set) |
 
 **Example:**
 
 ```bash
+# Without authentication
 curl "http://localhost:3333/?text=Hello%20World"
+
+# With authentication via query parameter
+curl "http://localhost:3333/?text=Hello%20World&key=your_secure_password"
 ```
 
 #### `GET /pulse` - Health Check
@@ -218,22 +229,33 @@ curl -I http://localhost:3333/pulse
 
 ### Authentication
 
-If `SECURE_KEY` is configured, include it in your requests:
+If `SECURE_KEY` is configured, include it in your requests using either method:
 
-**Header:**
+**Method 1: Query Parameter (Easier - No Custom Headers Needed)**
 
-```
-Secure-Key: your_secure_password
-```
-
-**Example:**
+Add `key` parameter to your URL:
 
 ```bash
+# GET request
+curl "http://localhost:3333/?text=Hello&key=your_secure_password"
+
+# POST request
+curl -X POST "http://localhost:3333/?key=your_secure_password" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Authenticated message"}'
+```
+
+**Method 2: Custom Header (More Secure)**
+
+```bash
+# With Secure-Key header
 curl -X POST http://localhost:3333/ \
   -H "Content-Type: application/json" \
   -H "Secure-Key: your_secure_password" \
   -d '{"text": "Authenticated message"}'
 ```
+
+> **Note:** When `SECURE_KEY` is not set (empty), authentication is disabled and all requests are allowed.
 
 ---
 
@@ -247,6 +269,18 @@ curl -X POST http://localhost:3333/ \
 curl -X POST http://localhost:3333/ \
   -H "Content-Type: application/json" \
   -d '{"text": "Hello from Pusher!"}'
+```
+
+**With Authentication (Query Parameter):**
+
+```bash
+# GET with authentication
+curl "http://localhost:3333/?text=Secure%20message&key=your_password"
+
+# POST with authentication
+curl -X POST "http://localhost:3333/?key=your_password" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Authenticated message"}'
 ```
 
 **With Link Preview:**
@@ -271,7 +305,10 @@ curl -X POST http://localhost:3333/ \
 # Simple message
 http POST localhost:3333 text="Hello World"
 
-# With authentication
+# With authentication (query parameter - easier)
+http POST "localhost:3333?key=your_password" text="Secure message"
+
+# With authentication (header method)
 http POST localhost:3333 text="Secure message" Secure-Key:your_password
 
 # With markdown
@@ -283,31 +320,56 @@ http POST localhost:3333 text="**Important** update" markdown:=true
 ```python
 import requests
 
-def send_telegram_message(text, markdown=False):
+def send_telegram_message(text, markdown=False, secure_key=None):
+    # Method 1: Using query parameter (simpler)
+    params = {}
+    if secure_key:
+        params['key'] = secure_key
+    
     response = requests.post(
         'http://localhost:3333/',
+        params=params,
         json={
             'text': text,
             'markdown': markdown,
             'preview': False
-        },
-        headers={'Secure-Key': 'your_secure_password'}  # if enabled
+        }
+    )
+    return response.json()
+
+# Alternatively, using header authentication:
+def send_with_header(text, secure_key=None):
+    headers = {}
+    if secure_key:
+        headers['Secure-Key'] = secure_key
+    
+    response = requests.post(
+        'http://localhost:3333/',
+        json={'text': text},
+        headers=headers
     )
     return response.json()
 
 # Usage
 send_telegram_message("Deployment successful! 🚀")
+send_telegram_message("Secure message", secure_key="your_password")
 ```
 
 ### JavaScript/Node.js Example
 
 ```javascript
+// Method 1: Using query parameter (simpler, no custom headers)
 async function sendTelegramMessage(text, options = {}) {
-  const response = await fetch('http://localhost:3333/', {
+  const params = new URLSearchParams();
+  if (options.secureKey) {
+    params.append('key', options.secureKey);
+  }
+  
+  const url = `http://localhost:3333/?${params}`;
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'Secure-Key': 'your_secure_password'  // if enabled
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       text,
@@ -318,8 +380,26 @@ async function sendTelegramMessage(text, options = {}) {
   return response.json();
 }
 
+// Method 2: Using header authentication
+async function sendWithHeader(text, secureKey) {
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+  if (secureKey) {
+    headers['Secure-Key'] = secureKey;
+  }
+  
+  const response = await fetch('http://localhost:3333/', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ text })
+  });
+  return response.json();
+}
+
 // Usage
 await sendTelegramMessage('Build completed successfully!');
+await sendTelegramMessage('Secure message', { secureKey: 'your_password' });
 ```
 
 ### Bash Script Example
@@ -330,7 +410,16 @@ await sendTelegramMessage('Build completed successfully!');
 PUSHER_URL="http://localhost:3333/"
 SECURE_KEY="your_secure_password"
 
-function notify() {
+# Method 1: Using query parameter (simpler)
+function notify_simple() {
+    local message="$1"
+    curl -s -X POST "${PUSHER_URL}?key=${SECURE_KEY}" \
+        -H "Content-Type: application/json" \
+        -d "{\"text\": \"$message\"}"
+}
+
+# Method 2: Using header
+function notify_header() {
     local message="$1"
     curl -s -X POST "$PUSHER_URL" \
         -H "Content-Type: application/json" \
@@ -339,7 +428,8 @@ function notify() {
 }
 
 # Usage
-notify "Backup completed at $(date)"
+notify_simple "Backup completed at $(date)"
+```
 ```
 
 ### Integration with Uptime Kuma
