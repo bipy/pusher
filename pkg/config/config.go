@@ -1,31 +1,53 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 )
 
 const (
+	// Telegram API constants
 	BaseURL        = "https://api.telegram.org/bot"
 	ParseMode      = "MarkdownV2"
-	ApiSendMessage = "/sendMessage"
+	APISendMessage = "/sendMessage"
+
+	// Message constraints
+	MaxRuneLength = 1000 // Max runes per message chunk (Telegram limit is 4096 bytes)
 )
 
 var (
+	// Telegram configuration
 	Token  string
-	ChatId int
-	ApiURL string
-	Key    string
+	ChatID int
+	APIURL string
+
+	// Security key for optional authentication
+	Key string
 )
 
 func init() {
-	var err error
-	ChatId, err = strconv.Atoi(os.Getenv("CHAT_ID"))
-	if err != nil {
-		panic("invalid chat id")
-	}
+	// Validate and load Telegram token
 	Token = os.Getenv("TG_TOKEN")
+	if Token == "" {
+		panic("TG_TOKEN environment variable is required")
+	}
+
+	// Validate and load chat ID
+	chatIDStr := os.Getenv("CHAT_ID")
+	if chatIDStr == "" {
+		panic("CHAT_ID environment variable is required")
+	}
+
+	var err error
+	ChatID, err = strconv.Atoi(chatIDStr)
+	if err != nil {
+		panic(fmt.Sprintf("invalid CHAT_ID: %v", err))
+	}
+
+	// Load optional security key
 	Key = os.Getenv("SECURE_KEY")
 
-	ApiURL = BaseURL + Token + ApiSendMessage
+	// Build API URL
+	APIURL = BaseURL + Token + APISendMessage
 }

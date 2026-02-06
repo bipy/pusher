@@ -5,23 +5,22 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/labstack/echo/v4"
 	"io"
 	"net/http"
+	"strings"
+
+	"github.com/labstack/echo/v4"
 	"pusher/app/models"
 	"pusher/pkg/config"
 	"pusher/pkg/utils"
-	"strings"
 )
 
-// max length 4096 byte
-const runeLength int = 1000
-
+// Push sends a message to Telegram, splitting it into chunks if necessary
 func Push(message []rune, disableLinkPreview bool, ip string) error {
-	for i := 0; i*runeLength < len(message); i++ {
-		s := message[i*runeLength : utils.Min((i+1)*runeLength, len(message))]
+	for i := 0; i*config.MaxRuneLength < len(message); i++ {
+		s := message[i*config.MaxRuneLength : utils.Min((i+1)*config.MaxRuneLength, len(message))]
 		msg := &models.TgMessage{
-			ChatId:             config.ChatId,
+			ChatID:             config.ChatID,
 			Text:               fmt.Sprintf("%s\n\n%s\n*From: %s*", string(s), strings.Repeat("\\-", 10), ip),
 			ParseMode:          config.ParseMode,
 			DisableLinkPreview: disableLinkPreview,
@@ -43,7 +42,7 @@ func send(msg *models.TgMessage) error {
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest(http.MethodPost, config.ApiURL, bytes.NewReader(data))
+	req, err := http.NewRequest(http.MethodPost, config.APIURL, bytes.NewReader(data))
 	if err != nil {
 		return err
 	}
@@ -53,6 +52,8 @@ func send(msg *models.TgMessage) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
 		errMsg, _ := io.ReadAll(resp.Body)
 		return errors.New(fmt.Sprintf("status code: %d, error: %s", resp.StatusCode, errMsg))
