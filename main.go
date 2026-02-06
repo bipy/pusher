@@ -36,9 +36,9 @@ func main() {
 
 	// Start server with graceful shutdown
 	sc := echo.StartConfig{
-		Address:     addr,
-		HideBanner:  true,
-		GracefulTimeout: 10,
+		Address:         addr,
+		HideBanner:      true,
+		GracefulTimeout: 10, // Graceful shutdown timeout in seconds
 	}
 
 	slog.Info("Starting server", "address", addr)
