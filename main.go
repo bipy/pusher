@@ -20,7 +20,10 @@ func main() {
 	// Middleware
 	app.Use(middleware.RequestLogger())
 	app.Use(middleware.Recover())
-	app.Use(middleware.CORS())
+	app.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		UnsafeAllowOriginFunc: func(c *echo.Context, origin string) (allowedOrigin string, allowed bool, err error) {
+			return origin, true, nil
+		}}))
 
 	// Routes
 	routes.PublicRoutes(app)
