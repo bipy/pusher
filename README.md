@@ -435,7 +435,6 @@ function notify_header() {
 # Usage
 notify_simple "Backup completed at $(date)"
 ```
-```
 
 ### Integration with Uptime Kuma
 
