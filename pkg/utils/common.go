@@ -1,6 +1,7 @@
 package utils
 
-func Min(a int, b int) int {
+// Min returns the minimum of two integers
+func Min(a, b int) int {
 	if a > b {
 		return b
 	}

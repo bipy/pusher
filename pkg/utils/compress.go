@@ -5,16 +5,18 @@ import (
 	"compress/gzip"
 )
 
+// Gzip compresses data using gzip compression
 func Gzip(data []byte) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	gz := gzip.NewWriter(buf)
-	_, err := gz.Write(data)
-	if err != nil {
+
+	if _, err := gz.Write(data); err != nil {
 		return nil, err
 	}
-	err = gz.Close()
-	if err != nil {
+
+	if err := gz.Close(); err != nil {
 		return nil, err
 	}
+
 	return buf.Bytes(), nil
 }
