@@ -3,7 +3,7 @@ package controllers
 import (
 	"errors"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"pusher/pkg/config"
 )
 
@@ -17,7 +17,7 @@ import (
 // browser history, and referrer headers. Use header-based authentication in production
 // environments. Query parameter auth is provided for convenience in trusted environments
 // or when custom headers are not feasible (e.g., simple webhooks, URL-based triggers).
-func Authorize(c echo.Context) error {
+func Authorize(c *echo.Context) error {
 	// Try to get key from header first (more secure)
 	key := c.Request().Header.Get("Secure-Key")
 

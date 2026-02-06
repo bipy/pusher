@@ -2,24 +2,23 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
-	"time"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 	"pusher/pkg/routes"
 )
 
 func main() {
 	app := echo.New()
 
-	// Hide banner for cleaner output
-	app.HideBanner = true
-
 	// Middleware
-	app.Use(middleware.Logger())
+	app.Use(middleware.RequestLogger())
 	app.Use(middleware.Recover())
 	app.Use(middleware.CORS())
 
@@ -31,25 +30,23 @@ func main() {
 	port := getEnv("SERVER_PORT", "3333")
 	addr := fmt.Sprintf("%s:%s", host, port)
 
-	// Start server
-	go func() {
-		app.Logger.Info("Starting server on ", addr)
-		if err := app.Start(addr); err != nil {
-			app.Logger.Info("Shutting down the server")
-		}
-	}()
-
-	// Graceful shutdown
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// Create context that listens for the interrupt signal
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	if err := app.Shutdown(ctx); err != nil {
-		app.Logger.Fatal(err)
+	// Start server with graceful shutdown
+	sc := echo.StartConfig{
+		Address:     addr,
+		HideBanner:  true,
+		GracefulTimeout: 10,
 	}
+
+	slog.Info("Starting server", "address", addr)
+	if err := sc.Start(ctx, app); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		slog.Error("Server error", "error", err)
+		os.Exit(1)
+	}
+	slog.Info("Server shutdown completed")
 }
 
 // getEnv returns environment variable value or default if not set
