@@ -27,7 +27,7 @@ func Authorize(c echo.Context) error {
 	}
 
 	// Validate the key
-	if key == "" || key != config.Key {
+	if key != config.Key {
 		return errors.New("unauthorized")
 	}
 	return nil
